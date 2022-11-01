@@ -1,28 +1,28 @@
-import { useState } from "react";
-import { useFetch } from "./hooks/useFetch";
+import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
 
-const App = () => {
-  const [counter, setCounter] = useState(0);
-  console.log("App");
-
-  const { data, loading, error } = useFetch(
+const getData = async () => {
+  const { data } = await axios.get(
     "https://jsonplaceholder.typicode.com/users"
   );
+  return data;
+};
 
-  if (loading) return <p>Cargando...</p>;
-  if (error) return <p>{error}</p>;
+const App = () => {
+  const result = useQuery(["users"], getData, { retry: false });
+
+  console.log(result);
+
+  if (result.isLoading) return <p>Loading Data ...</p>;
+
+  if (result.isError) return <p> Error al cargar los datos ...</p>;
 
   return (
     <>
       <h1>UseEffect</h1>
-      <button onClick={() => setCounter(counter + 1)}>
-        Counter: {counter}
-      </button>
-      <ul>
-        {data.map((user) => (
-          <li key={user.id}>{user.name}</li>
-        ))}
-      </ul>
+      {result.data.map((user) => (
+        <li key={user.id}>{user.name}</li>
+      ))}
     </>
   );
 };
